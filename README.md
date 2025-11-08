@@ -1,6 +1,8 @@
 # 📬 Personal Newsletter - Agrégateur RSS Personnalisé
 
-Recevez chaque matin une newsletter personnalisée construite à partir de vos sources d’information.
+_⚠️ De nouvelles fonctionnalités et une amélioration du style arrivent bientôt !⚠️_  
+
+Recevez chaque matin une newsletter personnalisée construite à partir de vos sources d’information.  
 Vous choisissez vos flux RSS → le système les agrège → vous recevez une newsletter propre, concise et sans publicité.
 
 # ✨ Fonctionnalités
@@ -18,10 +20,12 @@ Vous choisissez vos flux RSS → le système les agrège → vous recevez une ne
 - S’exécute dans Docker, sur serveur, ou localement
 
 # 🧱 Architecture
-Composant	Rôle
-newsletter.py	Récupère les flux et génère la newsletter en HTML
-docker-compose.yml	Conteneurisation et planification d’exécution
-.env	Configuration privée (emails, flux, planification)
+| Composant | Rôle |
+| :---------------: |:---------------:|
+| newsletter.py  | Récupère les flux et génère la newsletter en HTML |  
+| docker-compose.yml | Conteneurisation et planification d’exécution |   
+| .env | Configuration privée (emails, flux, planification) |  
+
 ## 🔧 Prérequis
 
 - Python 3.9+
