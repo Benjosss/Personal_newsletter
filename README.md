@@ -13,7 +13,7 @@ Vous choisissez vos flux RSS et vos podcasts → le système les agrège → vou
 
 - Filtrage automatique des articles récents (24h par défaut)
 
-- - Filtrage automatique des podcasts récents
+- Filtrage automatique des podcasts récents
 
 - Résumés courts & lisibles
 
@@ -39,6 +39,8 @@ Vous choisissez vos flux RSS et vos podcasts → le système les agrège → vou
 - (Optionnel) Docker et Docker Compose
 
 - Un compte email SMTP (Gmail recommandé, App Password conseillé)
+
+- (Optionnel) Clés d'application Spotify
 
 # 🗂️ Installation
 
