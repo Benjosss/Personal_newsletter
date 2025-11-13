@@ -3,13 +3,17 @@
 _⚠️ De nouvelles fonctionnalités et une amélioration du style arrivent bientôt !⚠️_  
 
 Recevez chaque matin une newsletter personnalisée construite à partir de vos sources d’information.  
-Vous choisissez vos flux RSS → le système les agrège → vous recevez une newsletter propre, concise et sans publicité.
+Vous choisissez vos flux RSS et vos podcasts → le système les agrège → vous recevez une newsletter propre, concise et sans publicité.
 
 # ✨ Fonctionnalités
 
 - Ajout simple de flux RSS (Le Monde, Frandroid, JV.com, etc.)
 
+- Ajout simple de vos podcasts Spotify
+
 - Filtrage automatique des articles récents (24h par défaut)
+
+- - Filtrage automatique des podcasts récents
 
 - Résumés courts & lisibles
 
@@ -60,6 +64,7 @@ Crée un fichier .env à la racine sur le même modèle que .env.example :
 ```
 MAX_PER_FEED=5
 ```
+De même pour le nombre de podcasts
 
 ### Heure d’envoi quotidienne (HH:MM)
 ```
@@ -69,6 +74,13 @@ SCHEDULE_TIME=06:00
 ### Liste des flux, séparés par des virgules (pas d'espaces)
 ```
 RSS_FEEDS=https://www.frandroid.com/feed,https://www.developpez.com/index/rss,https://journalducoin.com/feed/
+```
+Faire de même pour les ids de podcasts
+
+### Clé client et mot de passe Spotify
+```
+SPOTIFY_CLIENT_ID=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+SPOTIFY_CLIENT_SECRET=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 ```
 
 ### SMTP
