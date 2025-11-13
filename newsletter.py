@@ -21,7 +21,7 @@ EMAIL_CONFIG = {
 
 MAX_PER_FEED = int(os.getenv('MAX_PER_FEED', 5))
 NAME = os.getenv('RECIPIENT_NAME', 'toi')
-SCHEDULE_TIME=os.getenv('SCHEDULE_TIME', '10:00')
+SCHEDULE_TIME = os.getenv('SCHEDULE_TIME', '10:00')
 SPOTIFY_CLIENT_ID = os.getenv('SPOTIFY_CLIENT_ID')
 SPOTIFY_CLIENT_SECRET = os.getenv('SPOTIFY_CLIENT_SECRET')
 SPOTIFY_MAX_PER_FEED = int(os.getenv('PODCASTS_MAX_PER_FEED', 3))
@@ -37,7 +37,6 @@ if not RSS_FEEDS:
 
 PODCASTS_FEEDS_STR = os.getenv('PODCASTS_FEEDS', '')
 PODCASTS_FEEDS = [feed.strip() for feed in PODCASTS_FEEDS_STR.split(',') if feed.strip()]
-show_podcast = False
 
 # === ARTICLES FETCHING ===
 
@@ -116,7 +115,6 @@ def fetch_recent_articles(MAX_PER_FEED=5):
         except Exception as e:
             print(f"Erreur avec {feed_url}: {e}")
     
-
     return articles
 
 # === PODCASTS FETCHING ===
@@ -149,14 +147,14 @@ def get_recent_podcast_by_show(show_id):
         episodes = response.json()["items"]
 
         # Filtrer les épisodes de la veille
-        from datetime import datetime, timedelta
         yesterday = datetime.now() - timedelta(days=1)
         return [
             episode for episode in episodes
             if datetime.strptime(episode["release_date"], "%Y-%m-%d").date() == yesterday.date()
         ]
     except Exception as e:
-            return []
+        print(f"Erreur get_recent_podcast_by_show: {e}")
+        return []
     
 def fetch_recent_podcasts():
     """Récupère les podcasts des dernières 24 heures (max X par flux)"""
@@ -165,62 +163,120 @@ def fetch_recent_podcasts():
     for show_id in PODCASTS_FEEDS:
         try:
             episodes = get_recent_podcast_by_show(show_id)
-            
             podcasts.extend(episodes)  
         except Exception as e:
             print(f"Erreur avec le podcast {show_id}: {e}")
     
     return podcasts
 
-
 # === EMAIL GENERATION AND SENDING ===
 
 def create_html_email(articles, podcasts):
     """Génère le HTML de la newsletter"""
-    html = f"""
-    <html>
-    <head>
-        <style>
-            body {{ font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; }}
-            h1 {{ color: #333; }}
-            .article {{ margin: 20px 0; padding: 15px; border-left: 3px solid #b52bff; }}
-            .source {{ color: #666; font-size: 0.9em; }}
-            .summary {{ color: #444; margin-top: 5px; }}
-            a {{ color: #7b00ff; text-decoration: none; }}
-        </style>
-    </head>
-    <body>
-        <h1>👋 Bonjour {NAME}, voici votre newsletter du {datetime.now().strftime('%d/%m')}</h1>
+    from html import escape
+    
+    html = f"""<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body {{ 
+            font-family: Arial, sans-serif; 
+            max-width: 800px; 
+            margin: 0 auto; 
+            padding: 20px;
+            background-color: #f5f5f5;
+        }}
+        h1 {{ 
+            color: #333; 
+            text-align: center;
+        }}
+        h2 {{
+            color: #333;
+            margin-top: 40px;
+            border-bottom: 2px solid #b52bff;
+            padding-bottom: 10px;
+        }}
+        .article {{ 
+            margin: 20px 0; 
+            padding: 15px; 
+            border-left: 4px solid #b52bff;
+            background-color: white;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }}
+        .article h3 {{
+            margin-top: 0;
+            margin-bottom: 10px;
+        }}
+        .source {{ 
+            color: #666; 
+            font-size: 0.9em; 
+            margin-bottom: 8px;
+        }}
+        .summary {{ 
+            color: #444; 
+            margin-top: 8px;
+            line-height: 1.5;
+        }}
+        a {{ 
+            color: #7b00ff; 
+            text-decoration: none; 
+        }}
+        a:hover {{
+            text-decoration: underline;
+        }}
+        .header {{
+            text-align: center;
+            margin-bottom: 30px;
+        }}
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>👋 Bonjour {escape(NAME)}, voici votre newsletter du {datetime.now().strftime('%d/%m')}</h1>
         <p>{len(articles)} articles des dernières 24h</p>
-    """
+    </div>
+"""
     
     for article in articles:
+        title_safe = escape(article['title'])
+        source_safe = escape(article['source'])
+        summary_safe = escape(article['summary']) if article['summary'] else ''
+        link_safe = escape(article['link'])
+        
         html += f"""
-        <div class="article">
-            <h3><a href="{article['link']}">{article['title']}</a></h3>
-            <p class="source">{article['source']} - {article['date'].strftime('%H:%M')}</p>
-            <p class="summary">{article['summary']}...</p>
-        </div>
-        """
+    <div class="article">
+        <h3><a href="{link_safe}">{title_safe}</a></h3>
+        <p class="source">{source_safe} - {article['date'].strftime('%H:%M')}</p>
+        <p class="summary">{summary_safe}...</p>
+    </div>
+"""
 
-    if show_podcast:
+    # Afficher les podcasts seulement s'il y en a
+    if len(podcasts) > 0:
         html += f"""
-        <h2>🎧 Podcasts récents</h2>
-        <p>{len(podcasts)} épisodes des dernières 24h</p>
-        """
+    <h2>🎧 Podcasts récents</h2>
+    <p>{len(podcasts)} épisodes des dernières 24h</p>
+"""
         for episode in podcasts:
+            episode_title = escape(episode['name'])
+            episode_url = escape(episode['external_urls']['spotify'])
+            episode_desc = escape(episode.get('description', '')[:200])
+            episode_date = episode['release_date']
+            
             html += f"""
-            <div class="article">
-                <h3><a href="{episode['external_urls']['spotify']}">{episode['name']}</a></h3>
-                <p class="source">Podcast - {episode['release_date']}</p>
-                <p class="summary">{episode['description'][:50]}...</p>
-            </div>"""
-
+    <div class="article">
+        <h3><a href="{episode_url}">{episode_title}</a></h3>
+        <p class="source">Podcast - {episode_date}</p>
+        <p class="summary">{episode_desc}...</p>
+    </div>
+"""
     
     html += """
-    </body>
-    </html>
-    """
+</body>
+</html>
+"""
     return html
 
 def send_email(html_content):
@@ -230,7 +286,7 @@ def send_email(html_content):
     msg['From'] = EMAIL_CONFIG['sender']
     msg['To'] = EMAIL_CONFIG['recipient']
     
-    msg.attach(MIMEText(html_content, 'html'))
+    msg.attach(MIMEText(html_content, 'html', 'utf-8'))
     
     try:
         with smtplib.SMTP(EMAIL_CONFIG['smtp_server'], EMAIL_CONFIG['smtp_port']) as server:
@@ -245,20 +301,17 @@ def generate_newsletter():
     """Génère et envoie la newsletter"""
     print("Génération de la newsletter...")
     articles = fetch_recent_articles(MAX_PER_FEED)
-    podcast = fetch_recent_podcasts()
-    if len(podcast) > 0:
-        show_podcast = True
-    if articles:
-        html = create_html_email(articles, podcast)
-        send_email(html)
-    else:
-        print("Aucun nouvel article")
+    podcasts = fetch_recent_podcasts()
 
-# Planification : tous les jours à 6h
+    if articles or podcasts:
+        html = create_html_email(articles, podcasts)
+        send_email(html)
+
+# Planification
 schedule.every().day.at(SCHEDULE_TIME).do(generate_newsletter)
 
 if __name__ == "__main__":
-    generate_newsletter() # Test immédiat
+    generate_newsletter()  # Test immédiat
 
     # Boucle de planification
     while True:
