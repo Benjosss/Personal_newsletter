@@ -2,7 +2,7 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
-RUN pip install feedparser schedule request
+RUN pip install feedparser schedule requests
 
 COPY newsletter.py .
 
