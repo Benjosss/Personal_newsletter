@@ -9,6 +9,10 @@ import os
 import requests
 import base64
 
+from dotenv import load_dotenv
+load_dotenv()
+
+
 # === CONFIGURATION ===
 
 EMAIL_CONFIG = {
@@ -24,7 +28,6 @@ NAME = os.getenv('RECIPIENT_NAME', 'toi')
 SCHEDULE_TIME = os.getenv('SCHEDULE_TIME', '10:00')
 SPOTIFY_CLIENT_ID = os.getenv('SPOTIFY_CLIENT_ID')
 SPOTIFY_CLIENT_SECRET = os.getenv('SPOTIFY_CLIENT_SECRET')
-SPOTIFY_MAX_PER_FEED = int(os.getenv('PODCASTS_MAX_PER_FEED', 3))
 
 RSS_FEEDS_STR = os.getenv('RSS_FEEDS', '')
 RSS_FEEDS = [feed.strip() for feed in RSS_FEEDS_STR.split(',') if feed.strip()]
@@ -133,25 +136,40 @@ def get_access_token():
 def get_recent_podcast_by_show(show_id):
     try:
         access_token = get_access_token()
+        
+        # D'abord, récupérer les infos du show
+        show_url = f"https://api.spotify.com/v1/shows/{show_id}"
+        show_response = requests.get(show_url, headers={"Authorization": f"Bearer {access_token}"})
+        show_response.raise_for_status()
+        show_name = show_response.json()["name"]
+        
+        # Ensuite, récupérer les épisodes
         url = f"https://api.spotify.com/v1/shows/{show_id}/episodes"
-
         headers = {
             "Authorization": f"Bearer {access_token}"
         }
         params = {
-            "limit": SPOTIFY_MAX_PER_FEED
+            "limit": 50
         }
 
         response = requests.get(url, headers=headers, params=params)
         response.raise_for_status()
         episodes = response.json()["items"]
 
-        # Filtrer les épisodes de la veille
-        yesterday = datetime.now() - timedelta(days=1)
-        return [
-            episode for episode in episodes
-            if datetime.strptime(episode["release_date"], "%Y-%m-%d").date() == yesterday.date()
-        ]
+        # Filtrer les épisodes des dernières 24 heures
+        cutoff_time = datetime.now() - timedelta(hours=24)
+        filtered_episodes = []
+        
+        for episode in episodes:
+            # Convertir la date de release en datetime
+            release_date = datetime.strptime(episode["release_date"], "%Y-%m-%d")
+            
+            # Comparer avec les 24 dernières heures
+            if release_date >= cutoff_time:
+                episode['show_name'] = show_name
+                filtered_episodes.append(episode)
+        
+        return filtered_episodes
     except Exception as e:
         print(f"Erreur get_recent_podcast_by_show: {e}")
         return []
@@ -194,7 +212,7 @@ def create_html_email(articles, podcasts):
         h2 {{
             color: #333;
             margin-top: 40px;
-            border-bottom: 2px solid #b52bff;
+            border-bottom: 2px solid #345beb;
             padding-bottom: 10px;
         }}
         .article {{ 
@@ -206,6 +224,18 @@ def create_html_email(articles, podcasts):
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }}
         .article h3 {{
+            margin-top: 0;
+            margin-bottom: 10px;
+        }}
+        .podcast {{ 
+            margin: 20px 0; 
+            padding: 15px; 
+            border-left: 4px solid #345beb;
+            background-color: white;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }}
+        .podcast h3 {{
             margin-top: 0;
             margin-bottom: 10px;
         }}
@@ -265,11 +295,11 @@ def create_html_email(articles, podcasts):
             episode_desc = escape(episode.get('description', '')[:200])
             episode_date = episode['release_date']
             episode_duration = episode['duration_ms']
-            episode_duration_min = episode_duration // 60000  # Convertir ms en minutes
-            episode_show = escape(episode['show']['name'])
+            episode_duration_min = episode_duration // 60000
+            episode_show = escape(episode['show_name'])
             
             html += f"""
-    <div class="article">
+    <div class="podcast">
         <h3><a href="{episode_url}">{episode_title}</a></h3>
         <p class="source">{episode_show} - {episode_date} - {episode_duration_min}min</p>
         <p class="summary">{episode_desc}...</p>
