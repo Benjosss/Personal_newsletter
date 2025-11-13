@@ -264,11 +264,14 @@ def create_html_email(articles, podcasts):
             episode_url = escape(episode['external_urls']['spotify'])
             episode_desc = escape(episode.get('description', '')[:200])
             episode_date = episode['release_date']
+            episode_duration = episode['duration_ms']
+            episode_duration_min = episode_duration // 60000  # Convertir ms en minutes
+            episode_show = escape(episode['show']['name'])
             
             html += f"""
     <div class="article">
         <h3><a href="{episode_url}">{episode_title}</a></h3>
-        <p class="source">Podcast - {episode_date}</p>
+        <p class="source">{episode_show} - {episode_date} - {episode_duration_min}min</p>
         <p class="summary">{episode_desc}...</p>
     </div>
 """
