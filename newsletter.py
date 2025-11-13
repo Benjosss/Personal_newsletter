@@ -6,16 +6,10 @@ from datetime import datetime, timedelta
 import schedule
 import time
 import os
+import requests
+import base64
 
-# Configuration
-RSS_FEEDS_STR = os.getenv('RSS_FEEDS', '')
-RSS_FEEDS = [feed.strip() for feed in RSS_FEEDS_STR.split(',') if feed.strip()]
-
-# Flux par défaut si la variable d'environnement est vide
-if not RSS_FEEDS:
-    RSS_FEEDS = [
-        'https://www.lemonde.fr/international/rss_full.xml',
-    ]
+# === CONFIGURATION ===
 
 EMAIL_CONFIG = {
     'smtp_server': os.getenv('SMTP_SERVER', 'smtp.gmail.com'),
@@ -25,9 +19,27 @@ EMAIL_CONFIG = {
     'recipient': os.getenv('RECIPIENT_EMAIL')
 }
 
-MAX_PER_FEED = int(os.getenv('MAX_PER_FEED'))
+MAX_PER_FEED = int(os.getenv('MAX_PER_FEED', 5))
 NAME = os.getenv('RECIPIENT_NAME', 'toi')
 SCHEDULE_TIME=os.getenv('SCHEDULE_TIME', '10:00')
+SPOTIFY_CLIENT_ID = os.getenv('SPOTIFY_CLIENT_ID')
+SPOTIFY_CLIENT_SECRET = os.getenv('SPOTIFY_CLIENT_SECRET')
+SPOTIFY_MAX_PER_FEED = int(os.getenv('PODCASTS_MAX_PER_FEED', 3))
+
+RSS_FEEDS_STR = os.getenv('RSS_FEEDS', '')
+RSS_FEEDS = [feed.strip() for feed in RSS_FEEDS_STR.split(',') if feed.strip()]
+
+# Flux par défaut si la variable d'environnement est vide
+if not RSS_FEEDS:
+    RSS_FEEDS = [
+        'https://www.lemonde.fr/international/rss_full.xml',
+    ]
+
+PODCASTS_FEEDS_STR = os.getenv('PODCASTS_FEEDS', '')
+PODCASTS_FEEDS = [feed.strip() for feed in PODCASTS_FEEDS_STR.split(',') if feed.strip()]
+show_podcast = False
+
+# === ARTICLES FETCHING ===
 
 def parse_date(entry):
     """Parse la date d'un article avec plusieurs fallbacks"""
@@ -107,7 +119,63 @@ def fetch_recent_articles(MAX_PER_FEED=5):
 
     return articles
 
-def create_html_email(articles):
+# === PODCASTS FETCHING ===
+
+def get_access_token():
+    url = "https://accounts.spotify.com/api/token"
+    headers = {
+        "Authorization": "Basic " + base64.b64encode(f"{SPOTIFY_CLIENT_ID}:{SPOTIFY_CLIENT_SECRET}".encode()).decode()
+    }
+    data = {"grant_type": "client_credentials"}
+
+    response = requests.post(url, headers=headers, data=data)
+    response.raise_for_status()
+    return response.json()["access_token"]
+
+def get_recent_podcast_by_show(show_id):
+    try:
+        access_token = get_access_token()
+        url = f"https://api.spotify.com/v1/shows/{show_id}/episodes"
+
+        headers = {
+            "Authorization": f"Bearer {access_token}"
+        }
+        params = {
+            "limit": SPOTIFY_MAX_PER_FEED
+        }
+
+        response = requests.get(url, headers=headers, params=params)
+        response.raise_for_status()
+        episodes = response.json()["items"]
+
+        # Filtrer les épisodes de la veille
+        from datetime import datetime, timedelta
+        yesterday = datetime.now() - timedelta(days=1)
+        return [
+            episode for episode in episodes
+            if datetime.strptime(episode["release_date"], "%Y-%m-%d").date() == yesterday.date()
+        ]
+    except Exception as e:
+            return []
+    
+def fetch_recent_podcasts():
+    """Récupère les podcasts des dernières 24 heures (max X par flux)"""
+    podcasts = []
+    
+    for show_id in PODCASTS_FEEDS:
+        try:
+            episodes = get_recent_podcast_by_show(show_id)
+            
+            podcasts.extend(episodes)  
+        except Exception as e:
+            print(f"Erreur avec le podcast {show_id}: {e}")
+    
+    return podcasts
+
+
+# === EMAIL GENERATION AND SENDING ===
+
+def create_html_email(articles, podcasts):
     """Génère le HTML de la newsletter"""
     html = f"""
     <html>
@@ -134,6 +202,20 @@ def create_html_email(articles):
             <p class="summary">{article['summary']}...</p>
         </div>
         """
+
+    if show_podcast:
+        html += f"""
+        <h2>🎧 Podcasts récents</h2>
+        <p>{len(podcasts)} épisodes des dernières 24h</p>
+        """
+        for episode in podcasts:
+            html += f"""
+            <div class="article">
+                <h3><a href="{episode['external_urls']['spotify']}">{episode['name']}</a></h3>
+                <p class="source">Podcast - {episode['release_date']}</p>
+                <p class="summary">{episode['description'][:50]}...</p>
+            </div>"""
+
     
     html += """
     </body>
@@ -163,8 +245,11 @@ def generate_newsletter():
     """Génère et envoie la newsletter"""
     print("Génération de la newsletter...")
     articles = fetch_recent_articles(MAX_PER_FEED)
+    podcast = fetch_recent_podcasts()
+    if len(podcast) > 0:
+        show_podcast = True
     if articles:
-        html = create_html_email(articles)
+        html = create_html_email(articles, podcast)
         send_email(html)
     else:
         print("Aucun nouvel article")
