@@ -157,7 +157,7 @@ def get_recent_podcast_by_show(show_id):
         episodes = response.json()["items"]
 
         # Filtrer les épisodes des dernières 24 heures
-        cutoff_time = datetime.now() - timedelta(hours=24)
+        cutoff_time = datetime.now() - timedelta(hours=30)
         filtered_episodes = []
         
         for episode in episodes:
@@ -209,8 +209,13 @@ def create_html_email(articles, podcasts):
             color: #333; 
             text-align: center;
         }}
-        h2 {{
+        .articles-title {{
             color: #333;
+            margin-top: 40px;
+            border-bottom: 2px solid #b52bff;
+            padding-bottom: 10px;
+        }}
+        .podcasts-title {{
             margin-top: 40px;
             border-bottom: 2px solid #345beb;
             padding-bottom: 10px;
@@ -250,8 +255,13 @@ def create_html_email(articles, podcasts):
             line-height: 1.5;
         }}
         a {{ 
-            color: #7b00ff; 
             text-decoration: none; 
+        }}
+        .article a{{
+            color: #b52bff;
+        }}
+        .podcast a{{
+            color: #345beb;
         }}
         a:hover {{
             text-decoration: underline;
@@ -267,8 +277,9 @@ def create_html_email(articles, podcasts):
         <h1>👋 Bonjour {escape(NAME)}, voici votre newsletter du {datetime.now().strftime('%d/%m')}</h1>
         <p>{len(articles)} articles des dernières 24h</p>
     </div>
-"""
-    
+
+    <h2 class="articles-title">📰 Articles récents</h2>
+    """
     for article in articles:
         title_safe = escape(article['title'])
         source_safe = escape(article['source'])
@@ -278,7 +289,7 @@ def create_html_email(articles, podcasts):
         html += f"""
     <div class="article">
         <h3><a href="{link_safe}">{title_safe}</a></h3>
-        <p class="source">{source_safe} - {article['date'].strftime('%H:%M')}</p>
+        <p class="source">{source_safe} • {article['date'].strftime('%H:%M')}</p>
         <p class="summary">{summary_safe}...</p>
     </div>
 """
@@ -286,7 +297,7 @@ def create_html_email(articles, podcasts):
     # Afficher les podcasts seulement s'il y en a
     if len(podcasts) > 0:
         html += f"""
-    <h2>🎧 Podcasts récents</h2>
+    <h2 class="podcasts-title">🎧 Podcasts récents</h2>
     <p>{len(podcasts)} épisodes des dernières 24h</p>
 """
         for episode in podcasts:
@@ -301,7 +312,7 @@ def create_html_email(articles, podcasts):
             html += f"""
     <div class="podcast">
         <h3><a href="{episode_url}">{episode_title}</a></h3>
-        <p class="source">{episode_show} - {episode_date} - {episode_duration_min}min</p>
+        <p class="source">{episode_show} • {episode_date} - {episode_duration_min}min</p>
         <p class="summary">{episode_desc}...</p>
     </div>
 """
