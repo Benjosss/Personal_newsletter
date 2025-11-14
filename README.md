@@ -66,7 +66,6 @@ Crée un fichier .env à la racine sur le même modèle que .env.example :
 ```
 MAX_PER_FEED=5
 ```
-De même pour le nombre de podcasts
 
 ### Heure d’envoi quotidienne (HH:MM)
 ```
