@@ -1,4 +1,4 @@
 .env
 build
 temp_build
-config.spec
+dist
