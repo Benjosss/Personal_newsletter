@@ -137,13 +137,13 @@ def get_recent_podcast_by_show(show_id):
     try:
         access_token = get_access_token()
         
-        # D'abord, récupérer les infos du show
+        # Récupérer les infos du show
         show_url = f"https://api.spotify.com/v1/shows/{show_id}"
         show_response = requests.get(show_url, headers={"Authorization": f"Bearer {access_token}"})
         show_response.raise_for_status()
         show_name = show_response.json()["name"]
         
-        # Ensuite, récupérer les épisodes
+        # Récupérer les épisodes
         url = f"https://api.spotify.com/v1/shows/{show_id}/episodes"
         headers = {
             "Authorization": f"Bearer {access_token}"
@@ -156,22 +156,25 @@ def get_recent_podcast_by_show(show_id):
         response.raise_for_status()
         episodes = response.json()["items"]
 
-        # Filtrer les épisodes des dernières 24 heures
-        cutoff_time = datetime.now() - timedelta(hours=30)
+        # Calculer les dates à inclure (aujourd'hui et hier)
+        today = datetime.now().date()
+        yesterday = (datetime.now() - timedelta(days=1)).date()
+        
         filtered_episodes = []
         
         for episode in episodes:
-            # Convertir la date de release en datetime
-            release_date = datetime.strptime(episode["release_date"], "%Y-%m-%d")
+            # Convertir la date de release en objet date (sans l'heure)
+            release_date = datetime.strptime(episode["release_date"], "%Y-%m-%d").date()
             
-            # Comparer avec les 24 dernières heures
-            if release_date >= cutoff_time:
+            # Inclure si sorti aujourd'hui OU hier
+            if release_date == today or release_date == yesterday:
                 episode['show_name'] = show_name
                 filtered_episodes.append(episode)
         
         return filtered_episodes
+        
     except Exception as e:
-        print(f"Erreur get_recent_podcast_by_show: {e}")
+        print(f"Erreur get_recent_podcast_by_show ({show_id}): {e}")
         return []
     
 def fetch_recent_podcasts():
