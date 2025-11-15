@@ -11,7 +11,7 @@ from datetime import datetime, timedelta
 PORT = 8765
 should_shutdown = False
 last_activity = datetime.now()
-activity_timeout = 600  # Arrêter après 30 secondes d'inactivité
+activity_timeout = 600  # Arrêter après 10 minutes d'inactivité
 
 def get_base_path():
     """Retourne le chemin de base selon le mode (exécutable ou script)"""
