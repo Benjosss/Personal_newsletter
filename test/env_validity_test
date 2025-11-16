@@ -1,0 +1,96 @@
+from dotenv import load_dotenv
+import os
+import re
+
+
+load_dotenv()
+
+EMAIL_CONFIG = {
+    'smtp_server': os.getenv('SMTP_SERVER', 'smtp.gmail.com'),
+    'smtp_port': os.getenv('SMTP_PORT', 587),
+    'sender': os.getenv('SENDER_EMAIL'),
+    'password': os.getenv('SENDER_PASSWORD'),
+    'recipient': os.getenv('RECIPIENT_EMAIL')
+}
+
+MAX_PER_FEED = os.getenv('MAX_PER_FEED', 5)
+NAME = os.getenv('RECIPIENT_NAME', 'toi')
+SCHEDULE_TIME = os.getenv('SCHEDULE_TIME', '10:00')
+SPOTIFY_CLIENT_ID = os.getenv('SPOTIFY_CLIENT_ID', '')
+SPOTIFY_CLIENT_SECRET = os.getenv('SPOTIFY_CLIENT_SECRET', '')
+
+RSS_FEEDS_STR = os.getenv('RSS_FEEDS', '')
+# TODO : Vérifier avant de découper
+RSS_FEEDS = [feed.strip() for feed in RSS_FEEDS_STR.split(',') if feed.strip()]
+
+# Flux par défaut si la variable d'environnement est vide
+if not RSS_FEEDS:
+    RSS_FEEDS = [
+        'https://www.lemonde.fr/international/rss_full.xml',
+    ]
+
+PODCASTS_FEEDS_STR = os.getenv('PODCASTS_FEEDS', '')
+# TODO : Vérifier avant de découper
+PODCASTS_FEEDS = [feed.strip() for feed in PODCASTS_FEEDS_STR.split(',') if feed.strip()]
+
+def test_email(mail):
+    valid = re.match(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$', mail)
+    print("Valid email address." if valid else "Invalid")
+
+def test_smtp_serveur(smtp):
+    valid = re.match(r'^([a-zA-Z0-9_%+-]+\.)+[a-zA-Z]{2,}$', smtp)
+    print("Valid smtp server." if valid else "Invalid")
+
+def test_smpt_port(smtp):
+    try:
+        port = int(smtp)
+        valid = port > 0
+    except (ValueError):
+        valid=False
+    print("Valid smtp port." if valid else "Invalid")
+
+def test_app_password(password):
+    valid = re.match(r'^([a-z]{4} ){3}[a-z]{4}$', password)
+    print("Valid app password." if valid else "Invalid")
+
+def test_name(name):
+    valid = re.match(r'^[a-zA-Z0-9\u00C0-\u00FF\'\-]+$', name)
+    print("Valid name" if valid else "Invalid")
+
+def test_max_feed(max):
+    try:
+        max = int(max)
+        valid = max > 0
+    except (ValueError):
+        valid=False
+    print("Valid max" if valid else "Invalid")
+
+def test_time(time):
+    valid = re.match(r'^[0-9]{2}\:[0-9]{2}$', time)
+    print("Valid time" if valid else "Invalid")
+
+def test_spotify_client(client):
+    valid = re.match(r'^([a-z0-9]{32}){0,1}$', client)
+    print("Valid client" if valid else "Invalid")
+
+def test_rss_feed(feed):
+    valid = re.match(r'https?:\/\/(?:www\.)?([-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b)*(\/[\/\d\w\.-]*)*(?:[\?])*(.+)*', feed)
+    print("Valid feed" if valid else "Invalid")
+
+def test_podcast_feed(feed):
+    valid = re.match(r'^([a-zA-Z0-9]{22},?)*$', feed)
+    print("Valid feed" if valid else "Invalid")
+
+if __name__ == "__main__":
+    test_email(EMAIL_CONFIG['recipient'])
+    test_email(EMAIL_CONFIG['sender'])
+    test_smtp_serveur(EMAIL_CONFIG['smtp_server'])
+    test_smpt_port(EMAIL_CONFIG['smtp_port'])
+    test_app_password(EMAIL_CONFIG['password'])
+    test_name(NAME)
+    test_max_feed(MAX_PER_FEED)
+    test_time(SCHEDULE_TIME)
+    test_spotify_client(SPOTIFY_CLIENT_ID)
+    test_spotify_client(SPOTIFY_CLIENT_SECRET)
+    test_rss_feed(RSS_FEEDS_STR)
+    test_podcast_feed(PODCASTS_FEEDS_STR)
