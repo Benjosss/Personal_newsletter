@@ -94,7 +94,7 @@ python newsletter.py
 
 ## 🏗️ Architecture
 ```
-newsletter-rss/
+Personal_newsletter/
 ├── config.py              # Interface de configuration
 ├── newsletter_config.exe  # Interface de configuration (.exe)
 ├── newsletter.py          # Script principal d'envoi d'email
@@ -117,4 +117,4 @@ Les PRs sont les bienvenues !
 
 ## 📄 License
 
-MIT © [LALLEMENT Benjamin]
+MIT © LALLEMENT Benjamin
