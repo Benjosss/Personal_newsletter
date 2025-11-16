@@ -26,8 +26,8 @@ EMAIL_CONFIG = {
 MAX_PER_FEED = int(os.getenv('MAX_PER_FEED', 5))
 NAME = os.getenv('RECIPIENT_NAME', 'toi')
 SCHEDULE_TIME = os.getenv('SCHEDULE_TIME', '10:00')
-SPOTIFY_CLIENT_ID = os.getenv('SPOTIFY_CLIENT_ID')
-SPOTIFY_CLIENT_SECRET = os.getenv('SPOTIFY_CLIENT_SECRET')
+SPOTIFY_CLIENT_ID = os.getenv('SPOTIFY_CLIENT_ID', '')
+SPOTIFY_CLIENT_SECRET = os.getenv('SPOTIFY_CLIENT_SECRET', '')
 
 RSS_FEEDS_STR = os.getenv('RSS_FEEDS', '')
 RSS_FEEDS = [feed.strip() for feed in RSS_FEEDS_STR.split(',') if feed.strip()]
