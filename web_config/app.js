@@ -197,10 +197,6 @@ function ConfigInterface() {
           React.createElement('div', { key: 1 }, [
             React.createElement('label', { key: 1, className: labelClass }, 'Heure d\'envoi (HH:MM)'),
             React.createElement('input', { key: 2, type: 'time', name: 'scheduleTime', value: config.scheduleTime, onChange: handleChange, className: inputClass })
-          ]),
-          React.createElement('div', { key: 2 }, [
-            React.createElement('label', { key: 1, className: labelClass }, 'Articles max par flux RSS'),
-            React.createElement('input', { key: 2, type: 'number', name: 'maxPerFeed', value: config.maxPerFeed, onChange: handleChange, min: 1, max: 20, className: inputClass })
           ])
         ])
       ]),
@@ -210,6 +206,10 @@ function ConfigInterface() {
         React.createElement('div', { key: 'title', className: 'flex items-center gap-2 mb-4' }, [
           React.createElement(Rss, { key: 1 }),
           React.createElement('h2', { key: 2, className: 'text-xl font-semibold text-gray-700' }, 'Flux RSS')
+        ]),
+        React.createElement('div', { key: 1 }, [
+          React.createElement('label', { key: 1, className: labelClass }, 'Articles max par flux RSS'),
+          React.createElement('input', { key: 2, type: 'number', name: 'maxPerFeed', value: config.maxPerFeed, onChange: handleChange, min: 1, max: 20, className: inputClass })
         ]),
         React.createElement('div', { key: 'field' }, [
           React.createElement('label', { key: 1, className: labelClass }, 'URLs des flux RSS (séparés par des virgules)'),

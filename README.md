@@ -1,40 +1,43 @@
-# 📬 Personal Newsletter - Agrégateur RSS Personnalisé
+# 📰 Personal RSS Newsletter
 
-_⚠️ De nouvelles fonctionnalités et une amélioration du style arrivent bientôt !⚠️_  
+> Agrégateur RSS personnalisé avec support Spotify Podcasts - Newsletter quotidienne automatique
+
+[![Python](https://img.shields.io/badge/Python-3.9+-blue.svg)]()
+[![Docker](https://img.shields.io/badge/Docker-Ready-blue.svg)]()
+[![License](https://img.shields.io/badge/License-MIT-green.svg)]()
+
 
 Recevez chaque matin une newsletter personnalisée construite à partir de vos sources d’information.  
 Vous choisissez vos flux RSS et vos podcasts → le système les agrège → vous recevez une newsletter propre, concise et sans publicité.
 
-# ✨ Fonctionnalités
+## ✨ Fonctionnalités  
 
-- Ajout simple de flux RSS (Le Monde, Frandroid, JV.com, etc.)
+[![RSS](https://img.shields.io/badge/RSS-Integration-orange.svg)]()  
+[![Spotify](https://img.shields.io/badge/Spotify-Integrated-green.svg)]()  
 
-- Ajout simple de vos podcasts Spotify
+- 🎯 Agrégation multi-sources RSS
+- 🎧 Intégration podcasts Spotify
+- 📧 Email HTML responsive
+- ⚙️ Interface de configuration visuelle
+- 🐳 Déploiement Docker simplifié
+- 🔒 Variables d'environnement sécurisées
 
-- Filtrage automatique des articles récents (24h par défaut)
 
-- Filtrage automatique des podcasts récents
 
-- Résumés courts & lisibles
-
-- Envoi d’un email quotidien à une heure définie
-
-- Compatible multi-sources (pas de limite technique)
-
-- S’exécute dans Docker, sur serveur, ou localement
-
-# 🧱 Architecture
+## 🧱 Architecture
 | Composant | Rôle |
 | :---------------: |:---------------:|
 | newsletter.py  | Récupère les flux et génère la newsletter en HTML |  
-| docker-compose.yml | Conteneurisation et planification d’exécution |   
+| docker-compose.yml | Conteneurisation et planification d’exécution | 
+| newsletter_config.exe | Lancemenent d'une interface web pour la configuration des emails |
+| config.py | La même chose mais directement en .py |  
 | .env | Configuration privée (emails, flux, planification) |  
 
 ## 🔧 Prérequis
 
 - Python 3.9+
 
-- pip ou poetry
+- pip
 
 - (Optionnel) Docker et Docker Compose
 
@@ -42,96 +45,76 @@ Vous choisissez vos flux RSS et vos podcasts → le système les agrège → vou
 
 - (Optionnel) Clés d'application Spotify
 
-# 🗂️ Installation
+## 🚀 Installation rapide
 
-## Clone du projet :
-
+### Option 1 : Avec Docker (recommandé)
+```bash
+git clone https://github.com/Benjosss/Personal_newsletter
+cd Personal_newsletter
+python config.py  # Configure via interface web
+# ou exécution de config.exe
+docker-compose build
+docker-compose up -d
 ```
-git clone https://github.com/Benjosss/Personal-newsletter.git
-cd Personal-newsletter
-``` 
 
-
-## Installe les dépendances :
-
-```
+### Option 2 : Installation locale
+```bash
+git clone https://github.com/Benjosss/Personal_newsletter
+cd Personal_newsletter
 pip install -r requirements.txt
-```
-
-## ⚙️ Configuration
-
-Crée un fichier .env à la racine sur le même modèle que .env.example :
-
-### Nombre max d’articles par flux
-```
-MAX_PER_FEED=5
-```
-
-### Heure d’envoi quotidienne (HH:MM)
-```
-SCHEDULE_TIME=06:00
-```
-
-### Liste des flux, séparés par des virgules (pas d'espaces)
-```
-RSS_FEEDS=https://www.frandroid.com/feed,https://www.developpez.com/index/rss,https://journalducoin.com/feed/
-```
-Faire de même pour les ids de podcasts
-
-### Clé client et mot de passe Spotify
-```
-SPOTIFY_CLIENT_ID=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-SPOTIFY_CLIENT_SECRET=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-```
-
-### SMTP
-```
-SENDER_EMAIL=ton_email@gmail.com
-SENDER_PASSWORD=motdepasse_ou_app_password
-RECIPIENT_EMAIL=destinataire@gmail.com
-RECIPIENT_NAME=toi
-```
-
-# ▶️ Exécution
-## Mode local (test immédiat)
-```
+python config.py  # Configure via interface web
+# ou exécution de config.exe
 python newsletter.py
 ```
 
-## Mode cron / tâche planifiée
+## ⚙️ Paramètres configurables
 
-Le script intègre déjà une boucle interne, rien à ajouter.
+### Email
+> Serveur SMTP (smtp.gmail.com par défaut )  
+> Port SMTP (587 par défaut)  
+  
+> Email expéditeur  
+> Mot de passe d'application (vidéo tutorielle dans l'interface web)  
+> Email destinataire  
+> Prénom destinataire  
+  
+### Planification  
+> Heure d'envoi (HH:MM)  
 
-## 🐳 Exécution avec Docker
 
-Lancer en mode service (`-d` pour détaché) :
+### Flux RSS  
+> Nombre d'articles par sources RSS  
+> URLs des flux RSS (séparés par des virugles)  
 
+### Podcasts Spotify  
+> Spotify Client ID  
+> Spotify Client Secret (Tuto dans l'interface web)  
+> Id des podcasts Spotify (Tuto dans l'interface web)  
+
+
+## 🏗️ Architecture
 ```
-docker compose up -d
+newsletter-rss/
+├── config.py              # Interface de configuration
+├── newsletter_config.exe  # Interface de configuration (.exe)
+├── newsletter.py          # Script principal d'envoi d'email
+├── web_config/            # Frontend React
+├── Dockerfile             # Image Docker
+├── docker-compose.yml     # Orchestration
+└── build.py               # Permet de packager les modification sur config.py
 ```
 
+## 🛠️ Stack technique
 
-Reconstruction si modifications :
+- **Backend** : Python 3.9+, feedparser, schedule, requests, dotenv
+- **Frontend** : React, TailwindCSS
+- **APIs** : Spotify Web API, SMTP
+- **DevOps** : Docker, docker-compose
 
-```
-docker compose down
-docker compose up --build -d
-```
+## 🤝 Contribution
 
-# 📦 Structure du projet
-```
-.
-├── newsletter.py          # Script principal
-├── requirements.txt       # Dépendances Python
-├── docker-compose.yml     # Déploiement Docker
-├── Dockerfile             # Image Python
-└── .env                   # Configuration privée (non commit)
-```
+Les PRs sont les bienvenues !
 
-# 🧑‍💻 Contribution
+## 📄 License
 
-Les PR sont les bienvenues : améliorations du parsing RSS, UI, ajout de sources, etc.
-
-# 📄 Licence
-
-MIT — libre d’utilisation, de modification et de distribution.
+MIT © [LALLEMENT Benjamin]
