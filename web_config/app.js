@@ -79,6 +79,10 @@ function ConfigInterface() {
 
   const [saved, setSaved] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [showText_apppsw, setShowText_apppsw] = useState(false);
+  const [showText_rssfeed, setShowText_rssfeed] = useState(false);
+  const [showText_spotify, setShowText_spotify] = useState(false);
+  const [showText_podcastid, setShowText_podcastid] = useState(false);
 
   useEffect(() => {
     fetch('/api/config')
@@ -135,6 +139,7 @@ function ConfigInterface() {
 
   const inputClass = "w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent";
   const labelClass = "block text-sm font-medium text-gray-700 mb-1";
+  const buttonClass = "text-purple-500";
 
   return React.createElement('div', {
     className: 'min-h-screen bg-gradient-to-br from-purple-50 to-blue-50 p-6'
@@ -167,7 +172,9 @@ function ConfigInterface() {
           ]),
           React.createElement('div', { key: 4 }, [
             React.createElement('label', { key: 1, className: labelClass }, 'Mot de passe d\'application'),
-            React.createElement('input', { key: 2, type: 'password', name: 'senderPassword', value: config.senderPassword, onChange: handleChange, placeholder: 'xxxx xxxx xxxx xxxx', className: inputClass })
+            React.createElement('input', { key: 2, type: 'password', name: 'senderPassword', value: config.senderPassword, onChange: handleChange, placeholder: 'xxxx xxxx xxxx xxxx', className: inputClass }),
+            React.createElement('button', {key: 2, className: buttonClass, 
+              onClick: () => setShowText_apppsw(!showText_apppsw)}, showText_apppsw ? React.createElement('a', {href: "https://www.youtube.com/shorts/WDfvVRVV8Js", target:"_blank"}, "Vidéo tutorielle") : "Comment faire ?"),
           ]),
           React.createElement('div', { key: 5 }, [
             React.createElement('label', { key: 1, className: labelClass }, 'Email destinataire'),
@@ -207,7 +214,9 @@ function ConfigInterface() {
         React.createElement('div', { key: 'field' }, [
           React.createElement('label', { key: 1, className: labelClass }, 'URLs des flux RSS (séparés par des virgules)'),
           React.createElement('textarea', { key: 2, name: 'rssFeeds', value: config.rssFeeds, onChange: handleChange, rows: 4, placeholder: 'https://www.numerama.com/feed/,https://www.frandroid.com/feed', className: inputClass + ' font-mono text-sm' }),
-          React.createElement('p', { key: 3, className: 'text-xs text-gray-500 mt-1' }, 'Exemple: https://site1.com/feed/,https://site2.com/rss')
+          React.createElement('p', { key: 3, className: 'text-xs text-gray-500 mt-1' }, 'Exemple: https://site1.com/feed/,https://site2.com/rss'),
+          React.createElement('button', {key: 2, className:buttonClass ,onClick: () => setShowText_rssfeed(!showText_rssfeed)}, 
+          showText_rssfeed ? React.createElement('p', null, "Allez sur le site web du media de votre choix, cliquez sur l'icone RSS et copiez-collez l'url du site") : "Comment faire ?")
         ])
       ]),
 
@@ -222,15 +231,24 @@ function ConfigInterface() {
             React.createElement('div', { key: 1 }, [
               React.createElement('label', { key: 1, className: labelClass }, 'Spotify Client ID'),
               React.createElement('input', { key: 2, type: 'text', name: 'spotifyClientId', value: config.spotifyClientId, onChange: handleChange, placeholder: 'Votre Client ID', className: inputClass })
-            ]),
+              ]),
             React.createElement('div', { key: 2 }, [
               React.createElement('label', { key: 1, className: labelClass }, 'Spotify Client Secret'),
               React.createElement('input', { key: 2, type: 'password', name: 'spotifyClientSecret', value: config.spotifyClientSecret, onChange: handleChange, placeholder: 'Votre Client Secret', className: inputClass })
             ])
           ]),
+          React.createElement('button', {key: 2, className: buttonClass ,onClick: () => setShowText_spotify(!showText_spotify)}, showText_spotify ? 
+            React.createElement('p', null, "Rendez vous sur : ", React.createElement('a', {href:"https://developer.spotify.com/dashboard", className:"text-blue-700", target:"_blank"}, "Spotify developers dashboard"), 
+            " et créez une application, donnez lui le nom et la description que vous voulez, mettez \"https://_blank\" en URL de redirection, et choisissez Web API. Vous pouvez maintenant copier-coller vos client ID et Secret ci-dessus !"
+          ) : "Comment faire ?"),
+            
           React.createElement('div', { key: 2 }, [
             React.createElement('label', { key: 1, className: labelClass }, 'IDs des shows Spotify (séparés par des virgules)'),
-            React.createElement('textarea', { key: 2, name: 'podcastsFeeds', value: config.podcastsFeeds, onChange: handleChange, rows: 2, placeholder: '2VRS1IJCTn2Nlkg33ZVfkM,5CqxjkwJ1s5K4rrYvnKZZd', className: inputClass + ' font-mono text-sm' })
+            React.createElement('textarea', { key: 2, name: 'podcastsFeeds', value: config.podcastsFeeds, onChange: handleChange, rows: 2, placeholder: '2VRS1IJCTn2Nlkg33ZVfkM,5CqxjkwJ1s5K4rrYvnKZZd', className: inputClass + ' font-mono text-sm' }),
+            React.createElement('button', {key: 2, className: buttonClass ,onClick: () => setShowText_podcastid(!showText_podcastid)}, showText_podcastid ? 
+            React.createElement('p', null, "Rendez vous sur le show podcast de votre choix, dans \"Partager\", copiez le lien vers le podcast et vous obtiendrez un lien sous la forme : \"https://open.spotify.com/episode/xxxxxxxxxxxxxxxxxxxxxx?si=bd3743b0ea0449ea\", copiez-collez la partie représentée par des x ci-dessus."
+
+            ) : "Comment faire ?"),
           ])
         ])
       ]),
