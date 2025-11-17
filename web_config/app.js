@@ -1,6 +1,6 @@
 const { useState, useEffect } = React;
 
-// Composants d'icônes SVG
+// SVG
 const Settings = () => React.createElement('svg', {
   xmlns: "http://www.w3.org/2000/svg", width: 24, height: 24, viewBox: "0 0 24 24",
   fill: "none", stroke: "currentColor", strokeWidth: 2, strokeLinecap: "round", strokeLinejoin: "round"
@@ -182,7 +182,7 @@ function ConfigInterface() {
           ]),
           React.createElement('div', { key: 6 }, [
             React.createElement('label', { key: 1, className: labelClass }, 'Votre prénom'),
-            React.createElement('input', { key: 2, type: 'text', name: 'recipientName', value: config.recipientName, onChange: handleChange, placeholder: 'Benjamin', className: inputClass })
+            React.createElement('input', { key: 2, type: 'text', name: 'recipientName', value: config.recipientName, onChange: handleChange, placeholder: 'Ton nom', className: inputClass })
           ])
         ])
       ]),

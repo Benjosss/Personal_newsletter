@@ -4,16 +4,14 @@ import os
 import sys
 from pathlib import Path
 
-# Répertoire racine du projet
 project_root = Path(__name__).parent.absolute()
 
-# Ajouter le répertoire racine au path Python
 sys.path.insert(0, str(project_root))
 
 block_cipher = None
 
 a = Analysis(
-    ['config.py'],  # Fichier principal à packager
+    ['config.py'],  # Main file
     pathex=[str(project_root)],
     binaries=[],
     datas=[
@@ -35,7 +33,7 @@ a = Analysis(
     noarchive=False,
 )
 
-# Options pour un seul fichier
+# One file
 pyz = PYZ(a.pure, a.zipped_data, cipher=block_cipher)
 
 exe = EXE(
@@ -45,18 +43,18 @@ exe = EXE(
     a.zipfiles,
     a.datas,
     [],
-    name='newsletter_config',  # Nom de l'exécutable
+    name='newsletter_config',  # .exe name
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
     upx=True,
     upx_exclude=[],
     runtime_tmpdir=None,
-    console=False,  # Pas de console
+    console=False,  # No console
     disable_windowed_traceback=False,
     argv_emulation=False,
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
-    icon=None,
+    icon='./web_config/favicon.ico',
 )

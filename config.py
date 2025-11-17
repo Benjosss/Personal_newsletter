@@ -11,15 +11,15 @@ from datetime import datetime, timedelta
 PORT = 8765
 should_shutdown = False
 last_activity = datetime.now()
-activity_timeout = 600  # Arrêter après 10 minutes d'inactivité
+activity_timeout = 600  # Stop after 10min
 
 def get_base_path():
     """Retourne le chemin de base selon le mode (exécutable ou script)"""
     if getattr(sys, 'frozen', False):
-        # Mode exécutable
+        # exe
         return os.path.dirname(sys.executable)
     else:
-        # Mode script
+        # script
         return os.path.dirname(os.path.abspath(__file__))
 
 def get_env_path():
@@ -31,24 +31,20 @@ def get_web_root():
     """Retourne le chemin vers les fichiers web"""
     base_dir = get_base_path()
     
-    # Essayer d'abord dans le répertoire de base (mode développement)
     web_config_dir = os.path.join(base_dir, 'web_config')
     if os.path.exists(web_config_dir):
         return web_config_dir
     
-    # Mode exécutable - chercher dans les données embarquées
     if getattr(sys, 'frozen', False):
-        # Essayer web_config d'abord
         temp_web_config = os.path.join(sys._MEIPASS, 'web_config')
         if os.path.exists(temp_web_config):
             return temp_web_config
         
-        # Essayer temp_config comme fallback
         temp_config_dir = os.path.join(sys._MEIPASS, 'temp_config')
         if os.path.exists(temp_config_dir):
             return temp_config_dir
     
-    return web_config_dir  # Retourner le chemin même s'il n'existe pas
+    return web_config_dir 
 
 def parse_env_file(env_path):
     """Parse le fichier .env existant"""
@@ -111,11 +107,10 @@ class ConfigHandler(http.server.SimpleHTTPRequestHandler):
         super().__init__(*args, directory=self.directory, **kwargs)
     
     def log_message(self, format, *args):
-        # Mettre à jour l'activité à chaque requête
+        # Update for each requests
         global last_activity
         last_activity = datetime.now()
         
-        # Afficher seulement les requêtes importantes (pas les favicon, etc.)
         if self.path not in ['/favicon.ico', '/'] and not self.path.startswith('/static/'):
             print(f"📡 {self.address_string()} - {self.path}")
     
@@ -140,13 +135,12 @@ class ConfigHandler(http.server.SimpleHTTPRequestHandler):
             self.end_headers()
             self.wfile.write(json.dumps({'config': config}).encode())
         elif self.path == '/api/keepalive':
-            # Endpoint pour garder le serveur actif
+            # Endpoint
             self.send_response(200)
             self.send_header('Content-type', 'application/json')
             self.end_headers()
             self.wfile.write(json.dumps({'status': 'alive'}).encode())
         else:
-            # Servir les fichiers statiques
             try:
                 super().do_GET()
             except Exception as e:
@@ -177,7 +171,7 @@ class ConfigHandler(http.server.SimpleHTTPRequestHandler):
                 self.end_headers()
                 self.wfile.write(json.dumps({'success': True}).encode())
                 
-                # Marquer pour arrêt
+                # Stop
                 should_shutdown = True
                 print("🛑 Arrêt du serveur dans 3 secondes...")
                 
@@ -196,11 +190,11 @@ def monitor_activity():
     global last_activity, should_shutdown
     
     while not should_shutdown:
-        time.sleep(5)  # Vérifier toutes les 5 secondes
+        time.sleep(5)  # Check every 5secs
         
         inactivity = (datetime.now() - last_activity).total_seconds()
         
-        # Si aucune activité depuis le timeout, arrêter le serveur
+        # Stop server
         if inactivity > activity_timeout:
             print(f"\n⏰ Aucune activité depuis {activity_timeout} secondes")
             print("🛑 Arrêt automatique du serveur...")
@@ -222,7 +216,7 @@ def main():
             print(f"   - {os.path.join(sys._MEIPASS, 'temp_config')}")
         sys.exit(1)
     
-    # Vérifier que index.html existe
+    # index.html check
     index_path = os.path.join(web_dir, 'index.html')
     if not os.path.exists(index_path):
         print(f"❌ Erreur: index.html non trouvé dans {web_dir}")
@@ -245,13 +239,11 @@ def main():
     print(f"   - Ctrl+C dans le terminal")
     print("═" * 50)
     
-    # Afficher les fichiers disponibles
     print("📁 Fichiers disponibles:")
     for file in os.listdir(web_dir):
         print(f"   📄 {file}")
     print("═" * 50)
     
-    # Démarrer le moniteur d'activité
     activity_monitor = threading.Thread(target=monitor_activity, daemon=True)
     activity_monitor.start()
     
@@ -267,13 +259,12 @@ def main():
     
     try:
         with ShutdownServer(("", PORT), ConfigHandler) as httpd:
-            # Ouvrir le navigateur
+            # Open browser
             webbrowser.open(f'http://localhost:{PORT}')
             
             print(f"🎯 Serveur prêt! Accédez à http://localhost:{PORT}")
             print("⏳ En attente de connexions...")
             
-            # Servir avec timeout pour permettre la vérification régulière
             while not should_shutdown:
                 httpd.handle_request()
                 
