@@ -22,6 +22,15 @@ Vous choisissez vos flux RSS et vos podcasts → le système les agrège → vou
 - 🐳 Déploiement Docker simplifié
 - 🔒 Variables d'environnement sécurisées
 
+## 📸 Screenshots
+
+### Interface de configuration
+
+<img src="gh_docs/config.png" alt="Config" width="300"/>
+
+### Newsletter reçue
+
+<img src="gh_docs/mail.png" alt="Email" width="300"/>
 
 
 ## 🧱 Architecture
